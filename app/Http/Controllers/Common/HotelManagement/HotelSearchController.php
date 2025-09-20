@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Common\HotelManagement;
 
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\HotelManagement\Hotel;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class HotelSearchController extends Controller
 {
@@ -13,12 +14,19 @@ class HotelSearchController extends Controller
      */
     public function search(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'check_in_date'  => 'required|date|after_or_equal:today',
             'check_out_date' => 'required|date|after:check_in_date',
             'room_type'      => 'nullable|string',
             'rooms_count'    => 'nullable|integer|min:1',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+            'success' => false,
+            'errors'  => $validator->errors()
+            ], 422);
+        }
 
         $checkIn  = $request->check_in_date;
         $checkOut = $request->check_out_date;

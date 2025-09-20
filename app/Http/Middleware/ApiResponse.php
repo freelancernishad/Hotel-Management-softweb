@@ -25,6 +25,7 @@ class ApiResponse
 
         // Capture the response
         $response = $next($request);
+        // Log::info('Original Response: ', ['response' => $response]);
 
         // Check if the response is a valid Response object
         if ($response instanceof Response) {

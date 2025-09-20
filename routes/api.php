@@ -118,3 +118,18 @@ if (file_exists($BlogPostRoutes = __DIR__.'/Common/Blogs/BlogPostRoutes.php')) {
 
 
 
+
+// Load HotelRoutes
+if (file_exists($HotelRoutes = __DIR__.'/Admins/HotelManagement/HotelRoutes.php')) {
+    require $HotelRoutes;
+}
+
+
+// Load CommonHotelRoutes
+if (file_exists($CommonHotelRoutes = __DIR__.'/Common/HotelManagement/HotelRoutes.php')) {
+    require $CommonHotelRoutes;
+}
+
+
+
+

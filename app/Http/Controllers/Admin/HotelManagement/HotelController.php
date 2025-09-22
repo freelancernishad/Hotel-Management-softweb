@@ -116,6 +116,7 @@ class HotelController extends Controller
 
         return response()->json([
             'success' => true,
+            'message' => 'Rooms created successfully.',
             'rooms' => $createdRooms
         ], 201);
     }

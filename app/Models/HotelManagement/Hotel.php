@@ -2,32 +2,49 @@
 
 namespace App\Models\HotelManagement;
 
-use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Hotel extends Model
+class Hotel extends Authenticatable implements JWTSubject
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $fillable = [
-        'name',
-        'description',
-        'location',
-        'contact_number',
-        'email',
-        'image',
-        'manager_id',
-        'is_active'
+        'name', 'description', 'location', 'contact_number',
+        'email', 'image', 'manager_id', 'is_active',
+        'password', 'username'
+    ];
+
+    protected $hidden = [
+        'password',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'password' => 'hashed',
     ];
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'username' => $this->username,
+            'is_active' => $this->is_active,
+        ];
+    }
 
     public function manager()
     {
-        return $this->belongsTo(User::class, 'manager_id');
+        return $this->belongsTo(\App\Models\User::class, 'manager_id');
     }
 
     public function rooms()
@@ -48,11 +65,11 @@ class Hotel extends Model
                 $query->where('status', 'confirmed')
                     ->where(function ($q) use ($checkInDate, $checkOutDate) {
                         $q->whereBetween('check_in_date', [$checkInDate, $checkOutDate])
-                            ->orWhereBetween('check_out_date', [$checkInDate, $checkOutDate])
-                            ->orWhere(function ($q) use ($checkInDate, $checkOutDate) {
-                                $q->where('check_in_date', '<=', $checkInDate)
-                                    ->where('check_out_date', '>=', $checkOutDate);
-                            });
+                          ->orWhereBetween('check_out_date', [$checkInDate, $checkOutDate])
+                          ->orWhere(function ($q) use ($checkInDate, $checkOutDate) {
+                              $q->where('check_in_date', '<=', $checkInDate)
+                                ->where('check_out_date', '>=', $checkOutDate);
+                          });
                     });
             })
             ->get();

@@ -131,5 +131,12 @@ if (file_exists($CommonHotelRoutes = __DIR__.'/Common/HotelManagement/HotelRoute
 }
 
 
+// Load HotelAuthRoutes
+if (file_exists($HotelAuthRoutes = __DIR__.'/Hotel/Auth/HotelAuthRoutes.php')) {
+    require $HotelAuthRoutes;
+}
+
+
+
 
 

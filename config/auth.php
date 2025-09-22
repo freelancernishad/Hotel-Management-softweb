@@ -71,6 +71,10 @@ return [
         //     'provider' => 'students',
         //     'secret' => env('STUDENT_JWT_SECRET'), // Replace with your admin secret key
         // ],
+          'hotel' => [
+                'driver' => 'jwt',   // tymon/jwt ব্যবহার করলে
+                'provider' => 'hotels',
+            ],
     ],
 
 
@@ -110,6 +114,10 @@ return [
         //     'driver' => 'eloquent',
         //     'model' => App\Models\Student::class,
         // ],
+        'hotels' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\HotelManagement\Hotel::class,
+        ],
     ],
 
     /*

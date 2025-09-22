@@ -2,6 +2,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\AuthenticateAdmin;
 use App\Http\Controllers\Admin\HotelManagement\HotelController;
+use App\Http\Controllers\Admin\HotelManagement\BookingController;
 
 Route::prefix('admin')->group(function () {
     Route::middleware(AuthenticateAdmin::class)->group(function () {
@@ -14,3 +15,9 @@ Route::prefix('admin')->group(function () {
         });
     });
 });
+
+
+
+Route::post('hotel/bookings', [BookingController::class, 'store']);
+Route::post('hotel/multiple/bookings', [BookingController::class, 'storeMultiple']);
+Route::get('hotel/bookings/{id}', [BookingController::class, 'show']);

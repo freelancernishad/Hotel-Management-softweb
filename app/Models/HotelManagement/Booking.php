@@ -20,7 +20,10 @@ class Booking extends Model
         'check_out_date',
         'total_amount',
         'status',
-        'special_requests'
+        'special_requests',
+        'user_name',
+        'user_email',
+        'user_phone'
     ];
 
     protected $dates = [

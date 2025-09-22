@@ -21,7 +21,7 @@ class HotelController extends Controller
     }
 
     // Create a new hotel
-  public function store(Request $request)
+ public function store(Request $request)
 {
     $validator = Validator::make($request->all(), [
         'name'           => 'required|string|max:255',
@@ -32,6 +32,8 @@ class HotelController extends Controller
         'image'          => 'nullable|string',
         'manager_id'     => 'nullable|exists:users,id',
         'is_active'      => 'boolean',
+        'username'       => 'required|string|unique:hotels,username',
+        'password'       => 'required|string|min:8',
         'rooms'          => 'nullable|array'
     ]);
 
@@ -40,8 +42,11 @@ class HotelController extends Controller
     }
 
     $hotelData = $request->only([
-        'name', 'description', 'location', 'contact_number', 'email', 'manager_id', 'is_active', 'image'
+        'name', 'description', 'location', 'contact_number', 'email', 'manager_id', 'is_active', 'image', 'username'
     ]);
+
+    // Add hashed password
+    $hotelData['password'] = $request->password; // Laravel 10+ will auto-hash due to $casts in model
 
     $hotel = Hotel::create($hotelData);
 
@@ -57,6 +62,7 @@ class HotelController extends Controller
         'rooms' => $createdRooms
     ], 201);
 }
+
 
 /**
  * Add multiple rooms to a hotel

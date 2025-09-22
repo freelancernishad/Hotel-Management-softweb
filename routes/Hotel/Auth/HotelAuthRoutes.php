@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\HotelManagement\HotelController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\AuthenticateHotel;
 use App\Http\Controllers\Auth\Hotel\HotelAuthController;
@@ -19,4 +20,5 @@ Route::prefix('auth/hotel')->group(function () {
 
     Route::middleware(AuthenticateHotel::class)->group(function () {
         Route::post('hotel/profile', [HotelAuthController::class, 'updateProfile']);
+        Route::post('hotel/create/rooms', [HotelController::class, 'addRooms']);
     });

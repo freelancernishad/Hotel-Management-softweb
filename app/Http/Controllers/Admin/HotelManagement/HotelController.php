@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Admin\HotelManagement;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\HotelManagement\Hotel;
+use App\Http\Controllers\Controller;
 use App\Models\HotelManagement\Room;
+use Illuminate\Support\Facades\Auth;
+use App\Models\HotelManagement\Hotel;
 use Illuminate\Support\Facades\Validator;
 
 class HotelController extends Controller
@@ -86,7 +87,7 @@ protected function createRooms(array $roomsData, $hotelId, $returnOnlyRooms = fa
 
 
 // Add multiple rooms under a hotel
-public function addRooms(Request $request, $hotelId)
+public function addRooms(Request $request, $hotelId = null)
 {
     $validator = Validator::make($request->all(), [
         'rooms' => 'required|array|min:1',
@@ -103,15 +104,20 @@ public function addRooms(Request $request, $hotelId)
         return response()->json(['errors' => $validator->errors()], 422);
     }
 
-    $hotel = Hotel::findOrFail($hotelId);
+    // যদি hotelId না দেওয়া হয়, auth hotel থেকে নিন
+    if (!$hotelId) {
+        $hotel = Auth::guard('hotel')->user();
+        $hotelId = $hotel->id;
+    } else {
+        $hotel = Hotel::findOrFail($hotelId);
+    }
 
-     $createdRooms = $this->createRooms($request->rooms, $hotel->id, true);
+    $createdRooms = $this->createRooms($request->rooms, $hotelId, true);
+
     return response()->json([
         'success' => true,
         'rooms' => $createdRooms
     ], 201);
-
-
 }
 
 

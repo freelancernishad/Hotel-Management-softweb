@@ -21,4 +21,5 @@ Route::prefix('auth/hotel')->group(function () {
     Route::middleware(AuthenticateHotel::class)->group(function () {
         Route::post('hotel/profile', [HotelAuthController::class, 'updateProfile']);
         Route::post('hotel/create/rooms', [HotelController::class, 'addRooms']);
+        Route::get('hotel/get/rooms', [HotelController::class, 'getRooms']);
     });

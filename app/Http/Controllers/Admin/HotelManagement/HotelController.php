@@ -22,103 +22,128 @@ class HotelController extends Controller
     }
 
     // Create a new hotel
- public function store(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'name'           => 'required|string|max:255',
-        'description'    => 'nullable|string',
-        'location'       => 'required|string',
-        'contact_number' => 'required|string',
-        'email'          => 'required|email',
-        'image'          => 'nullable|string',
-        'manager_id'     => 'nullable|exists:users,id',
-        'is_active'      => 'boolean',
-        'username'       => 'required|string|unique:hotels,username',
-        'password'       => 'required|string|min:8',
-        'rooms'          => 'nullable|array'
-    ]);
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name'           => 'required|string|max:255',
+            'description'    => 'nullable|string',
+            'location'       => 'required|string',
+            'contact_number' => 'required|string',
+            'email'          => 'required|email',
+            'image'          => 'nullable|string',
+            'manager_id'     => 'nullable|exists:users,id',
+            'is_active'      => 'boolean',
+            'username'       => 'required|string|unique:hotels,username',
+            'password'       => 'required|string|min:8',
+            'rooms'          => 'nullable|array'
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json(['errors' => $validator->errors()], 422);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $hotelData = $request->only([
+            'name', 'description', 'location', 'contact_number', 'email', 'manager_id', 'is_active', 'image', 'username'
+        ]);
+
+        // Add hashed password
+        $hotelData['password'] = $request->password; // Laravel 10+ will auto-hash due to $casts in model
+
+        $hotel = Hotel::create($hotelData);
+
+        $createdRooms = [];
+        if ($request->has('rooms')) {
+            // Reuse createRooms function
+            $createdRooms = $this->createRooms($request->rooms, $hotel->id, true);
+        }
+
+        return response()->json([
+            'success' => true,
+            'hotel' => $hotel,
+            'rooms' => $createdRooms
+        ], 201);
     }
 
-    $hotelData = $request->only([
-        'name', 'description', 'location', 'contact_number', 'email', 'manager_id', 'is_active', 'image', 'username'
-    ]);
 
-    // Add hashed password
-    $hotelData['password'] = $request->password; // Laravel 10+ will auto-hash due to $casts in model
+    /**
+     * Add multiple rooms to a hotel
+     * $roomsData = array of rooms
+     * $hotelId = ID of hotel
+     * $returnOnlyRooms = if true, just return created rooms without JSON response
+     */
+    protected function createRooms(array $roomsData, $hotelId, $returnOnlyRooms = false)
+    {
+        $createdRooms = [];
+        foreach ($roomsData as $roomData) {
+            $roomData['hotel_id'] = $hotelId;
+            $createdRooms[] = Room::create($roomData);
+        }
 
-    $hotel = Hotel::create($hotelData);
-
-    $createdRooms = [];
-    if ($request->has('rooms')) {
-        // Reuse createRooms function
-        $createdRooms = $this->createRooms($request->rooms, $hotel->id, true);
+        return $returnOnlyRooms ? $createdRooms : response()->json([
+            'success' => true,
+            'rooms' => $createdRooms
+        ], 201);
     }
 
-    return response()->json([
-        'success' => true,
-        'hotel' => $hotel,
-        'rooms' => $createdRooms
-    ], 201);
-}
 
+    // Add multiple rooms under a hotel
+    public function addRooms(Request $request, $hotelId = null)
+    {
+        $validator = Validator::make($request->all(), [
+            'rooms' => 'required|array|min:1',
+            'rooms.*.room_number'     => 'required|string',
+            'rooms.*.room_type'       => 'required|string',
+            'rooms.*.price_per_night' => 'required|numeric|min:0',
+            'rooms.*.capacity'        => 'required|integer|min:1',
+            'rooms.*.description'     => 'nullable|string',
+            'rooms.*.image'           => 'nullable|url', // image URL
+            'rooms.*.availability'    => 'boolean',
+        ]);
 
-/**
- * Add multiple rooms to a hotel
- * $roomsData = array of rooms
- * $hotelId = ID of hotel
- * $returnOnlyRooms = if true, just return created rooms without JSON response
- */
-protected function createRooms(array $roomsData, $hotelId, $returnOnlyRooms = false)
-{
-    $createdRooms = [];
-    foreach ($roomsData as $roomData) {
-        $roomData['hotel_id'] = $hotelId;
-        $createdRooms[] = Room::create($roomData);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // যদি hotelId না দেওয়া হয়, auth hotel থেকে নিন
+        if (!$hotelId) {
+            $hotel = Auth::guard('hotel')->user();
+            $hotelId = $hotel->id;
+        } else {
+            $hotel = Hotel::findOrFail($hotelId);
+        }
+
+        $createdRooms = $this->createRooms($request->rooms, $hotelId, true);
+
+        return response()->json([
+            'success' => true,
+            'rooms' => $createdRooms
+        ], 201);
     }
 
-    return $returnOnlyRooms ? $createdRooms : response()->json([
-        'success' => true,
-        'rooms' => $createdRooms
-    ], 201);
-}
 
 
-// Add multiple rooms under a hotel
-public function addRooms(Request $request, $hotelId = null)
-{
-    $validator = Validator::make($request->all(), [
-        'rooms' => 'required|array|min:1',
-        'rooms.*.room_number'     => 'required|string',
-        'rooms.*.room_type'       => 'required|string',
-        'rooms.*.price_per_night' => 'required|numeric|min:0',
-        'rooms.*.capacity'        => 'required|integer|min:1',
-        'rooms.*.description'     => 'nullable|string',
-        'rooms.*.image'           => 'nullable|url', // image URL
-        'rooms.*.availability'    => 'boolean',
-    ]);
+    /**
+     * Get all rooms of a hotel
+     */
+    public function getRooms(Request $request, $hotelId = null)
+    {
+        // যদি hotelId না দেওয়া হয়, auth hotel থেকে নিন
+        if (!$hotelId) {
+            $hotel = Auth::guard('hotel')->user();
+            $hotelId = $hotel->id;
+        } else {
+            $hotel = Hotel::findOrFail($hotelId);
+        }
 
-    if ($validator->fails()) {
-        return response()->json(['errors' => $validator->errors()], 422);
+        $rooms = $hotel->rooms()->get();
+
+        return response()->json([
+            'success' => true,
+            'hotel_id' => $hotelId,
+            'rooms' => $rooms
+        ], 200);
     }
 
-    // যদি hotelId না দেওয়া হয়, auth hotel থেকে নিন
-    if (!$hotelId) {
-        $hotel = Auth::guard('hotel')->user();
-        $hotelId = $hotel->id;
-    } else {
-        $hotel = Hotel::findOrFail($hotelId);
-    }
-
-    $createdRooms = $this->createRooms($request->rooms, $hotelId, true);
-
-    return response()->json([
-        'success' => true,
-        'rooms' => $createdRooms
-    ], 201);
-}
 
 
     // Show hotel details including rooms

@@ -19,7 +19,7 @@ class HotelAuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|string',
+            'email' => 'required|string', // এখানে username বা email আসবে
             'password' => 'required|string',
         ]);
 
@@ -27,7 +27,13 @@ class HotelAuthController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $credentials = $request->only('email', 'password');
+        $login = $request->input('email'); // এখানে email বা username আসবে
+        $password = $request->input('password');
+
+        // Determine whether input is email or username
+        $credentials = filter_var($login, FILTER_VALIDATE_EMAIL)
+            ? ['email' => $login, 'password' => $password]
+            : ['username' => $login, 'password' => $password];
 
         if (! $token = Auth::guard('hotel')->attempt($credentials)) {
             return response()->json([
@@ -46,7 +52,6 @@ class HotelAuthController extends Controller
             'contact_number' => $hotel->contact_number,
             'email' => $hotel->email,
             'image' => $hotel->image,
-            // 'manager_id' => $hotel->manager_id,
             'is_active' => $hotel->is_active,
             'username' => $hotel->username,
         ];
@@ -56,6 +61,7 @@ class HotelAuthController extends Controller
             'hotel' => $payload,
         ], 200);
     }
+
 
     /**
      * Hotel logout

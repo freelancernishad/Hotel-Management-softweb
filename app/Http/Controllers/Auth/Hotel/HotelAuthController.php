@@ -54,6 +54,7 @@ class HotelAuthController extends Controller
             'image' => $hotel->image,
             'is_active' => $hotel->is_active,
             'username' => $hotel->username,
+            'role' => "hotel",
         ];
 
         return response()->json([

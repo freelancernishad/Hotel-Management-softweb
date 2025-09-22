@@ -117,6 +117,7 @@ public function register(Request $request)
             $payload = [
                 'email' => $admin->email,
                 'name' => $admin->name,
+                'role' => "admin",
                 'email_verified' => !is_null($admin->email_verified_at),
                 // Add additional fields as necessary
             ];

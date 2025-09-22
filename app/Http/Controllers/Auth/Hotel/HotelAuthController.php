@@ -107,6 +107,7 @@ class HotelAuthController extends Controller
             // 'manager_id' => $hotel->manager_id,
             'is_active' => $hotel->is_active,
             'username' => $hotel->username,
+            'role' => "hotel",
         ];
 
         return response()->json([
@@ -146,6 +147,7 @@ class HotelAuthController extends Controller
             'location' => $hotel->location,
             'is_active' => $hotel->is_active,
             'username' => $hotel->username,
+            'role' => "hotel",
         ];
 
         return response()->json([
@@ -229,6 +231,7 @@ class HotelAuthController extends Controller
             'image' => $hotel->image,
             'username' => $hotel->username,
             'is_active' => $hotel->is_active,
+            'role' => "hotel",
         ];
 
         return response()->json([

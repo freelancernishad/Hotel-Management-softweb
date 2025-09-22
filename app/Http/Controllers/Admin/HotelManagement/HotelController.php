@@ -96,7 +96,7 @@ class HotelController extends Controller
             'rooms.*.price_per_night' => 'required|numeric|min:0',
             'rooms.*.capacity'        => 'required|integer|min:1',
             'rooms.*.description'     => 'nullable|string',
-            'rooms.*.image'           => 'nullable|url', // image URL
+            'rooms.*.image'           => 'nullable|string', // image URL
             'rooms.*.availability'    => 'boolean',
         ]);
 

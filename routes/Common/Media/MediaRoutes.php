@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\AuthenticateAdmin;
 use App\Http\Controllers\Common\Media\MediaController;
+use App\Http\Middleware\AuthenticateHotel;
 use App\Http\Middleware\AuthenticateUser;
 
 Route::prefix('admin')->group(function () {
@@ -13,6 +14,12 @@ Route::prefix('admin')->group(function () {
 
 Route::prefix('user')->group(function () {
     Route::middleware(AuthenticateUser::class)->group(function () {
+        Route::post('/media/upload', [MediaController::class, 'upload']);
+    });
+});
+
+Route::prefix('hotel')->group(function () {
+    Route::middleware(AuthenticateHotel::class)->group(function () {
         Route::post('/media/upload', [MediaController::class, 'upload']);
     });
 });

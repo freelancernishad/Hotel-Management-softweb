@@ -8,34 +8,29 @@ use App\Models\Media\MediaFile;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use App\Models\Media\MediaFileVersion;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Resources\MediaFileResource;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\MediaFileCollection;
 use App\Services\FileSystem\FileUploadService;
-use Illuminate\Support\Facades\Http;
+use App\Http\Resources\MediaFileExportResource;
+use App\Http\Resources\MediaFileExportCollection;
+
 
 class MediaController extends Controller
 {
 
 public function index(Request $request)
 {
-
-
     $query = MediaFile::with(['versions' => function ($q) use ($request) {
-        // $q->where('label', 'original');
         if ($request->filled('versions')) {
-            // Accept comma-separated string or array
             $labels = is_array($request->versions) ? $request->versions : explode(',', $request->versions);
             $q->whereIn("label", $labels);
         }
-
-
     }])->latest();
 
-
-    // return response()->json(['data' => Auth::guard('user')->user()]);
     // Role-based filtering
     if (Auth::guard('api')->check()) {
         // Users see only their own uploads
@@ -44,15 +39,22 @@ public function index(Request $request)
     } elseif (Auth::guard('admin')->check()) {
         // Admins
         if ($request->filled('uploaded_by_user_id')) {
-            // Show only uploads by a specific user
             $query->where('uploaded_by_user_id', $request->uploaded_by_user_id);
         } elseif (!$request->boolean('view_all')) {
-            // If view_all is not true, show only uploads by this admin
             $query->where('uploaded_by_admin_id', Auth::guard('admin')->id());
         }
         // else: view_all=true, show everything
-    }else{
-        $query->whereNull('uploaded_by_user_id')->whereNull('uploaded_by_admin_id');
+
+    } elseif (Auth::guard('hotel')->check()) {
+        // Hotels see only their own uploads
+        $query->where('uploader_type', 'App\Models\HotelManagement\Hotel')
+              ->where('uploader_id', Auth::guard('hotel')->id());
+
+    } else {
+        // Unauthenticated or unknown
+        $query->whereNull('uploaded_by_user_id')
+              ->whereNull('uploaded_by_admin_id')
+              ->whereNull('uploader_id');
     }
 
     // Filter by MediaFile name
@@ -62,11 +64,6 @@ public function index(Request $request)
 
     // Filter by original version properties
     $query->whereHas('versions', function ($q) use ($request) {
-        // $q->where('label', 'original');
-
-
-
-
         if ($request->filled('size')) {
             $q->where('size', $request->size);
         }
@@ -105,10 +102,16 @@ public function index(Request $request)
     $perPage = $request->input('per_page', 20);
     $mediaFiles = $query->paginate($perPage);
 
+    if($request->res=='v2'){
+        return response()->json([
+            'data' => new MediaFileExportCollection($mediaFiles),
+        ]);
+    }
     return response()->json([
         'data' => new MediaFileCollection($mediaFiles),
     ]);
 }
+
 
 
 
@@ -166,7 +169,7 @@ public function upload(Request $request)
             return response()->json(['message' => 'Failed to fetch image from URL'], 400);
         }
 
-        // Try to guess extension from content-type
+        // Guess extension from content-type
         $contentType = $response->header('Content-Type');
         $extension = match ($contentType) {
             'image/jpeg' => 'jpg',
@@ -191,20 +194,36 @@ public function upload(Request $request)
 
     $filename = uniqid() . '.' . $extension;
 
-    // Track uploader
+    // Track old uploader fields
     $uploaded_by_user_id = Auth::guard('user')->id() ?? null;
     $uploaded_by_admin_id = Auth::guard('admin')->id() ?? null;
+
+    // Track polymorphic uploader
+    $uploader = null;
+    if ($uploaded_by_user_id) {
+        $uploader = Auth::guard('user')->user();
+    } elseif ($uploaded_by_admin_id) {
+        $uploader = Auth::guard('admin')->user();
+    } elseif (Auth::guard('hotel')->check()) {
+        $uploader = Auth::guard('hotel')->user();
+    }
 
     // Upload original to S3
     $originalUrl = (new FileUploadService())->uploadFileToS3($file, 'uploads/images');
 
     // Save media metadata
-    $media = MediaFile::create([
+    $media = new MediaFile([
         'name' => $originalName,
         'original_url' => $originalUrl,
         'uploaded_by_user_id' => $uploaded_by_user_id,
         'uploaded_by_admin_id' => $uploaded_by_admin_id,
     ]);
+
+    if ($uploader) {
+        $media->uploader()->associate($uploader);
+    }
+
+    $media->save();
 
     // Image sizes
     $sizes = [
@@ -276,6 +295,7 @@ public function upload(Request $request)
         'data' => new MediaFileResource($media),
     ]);
 }
+
 
 
 

@@ -24,6 +24,9 @@ Route::prefix('hotel')->group(function () {
     });
 });
 
+    Route::post('/media/file/upload', [MediaController::class, 'upload']);
+
+
 
 Route::prefix('media')->group(function () {
     Route::get('/', [MediaController::class, 'index']);

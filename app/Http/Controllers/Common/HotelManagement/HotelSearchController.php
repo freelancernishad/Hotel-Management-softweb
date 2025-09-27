@@ -96,8 +96,27 @@ class HotelSearchController extends Controller
     /**
      * Show hotel details by ID
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
+
+
+        $validator = Validator::make($request->all(), [
+            'check_in_date'  => 'required|date|after_or_equal:today',
+            'check_out_date' => 'required|date|after:check_in_date',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+            'success' => false,
+            'errors'  => $validator->errors()
+            ], 422);
+        }
+
+        $checkIn  = $request->check_in_date;
+        $checkOut = $request->check_out_date;
+
+
+
         $hotel = Hotel::with('rooms')->find($id);
 
         if (!$hotel) {
@@ -119,7 +138,7 @@ class HotelSearchController extends Controller
                 'manager_id'  => $hotel->manager_id,
                 'is_active'   => $hotel->is_active,
                 'image'       => $hotel->image,
-                'rooms'       => $hotel->rooms->map(function ($room) {
+                'rooms'       => $hotel->getAvailableRooms($checkIn, $checkOut)->map(function ($room) {
                     return [
                         'id'            => $room->id,
                         'room_number'   => $room->room_number,

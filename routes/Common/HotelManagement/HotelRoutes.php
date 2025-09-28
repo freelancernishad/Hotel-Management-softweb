@@ -1,6 +1,11 @@
 <?php
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\HotelManagement\HotelController;
 use App\Http\Controllers\Common\HotelManagement\HotelSearchController;
+
+
+
+ Route::get('hotels', [HotelController::class, 'index']);
 
 
 Route::get('/hotels/search', [HotelSearchController::class, 'search']);

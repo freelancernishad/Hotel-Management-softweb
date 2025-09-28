@@ -69,6 +69,7 @@ class HotelSearchController extends Controller
                 'description' => $hotel->description,
                 'contact_number' => $hotel->contact_number,
                 'email'       => $hotel->email,
+                'image'      => $hotel->image,
                 'is_active'   => $hotel->is_active,
                 'rooms_available' => $hotel->rooms->count(),
                 'rooms'       => $hotel->rooms->map(function ($room) {

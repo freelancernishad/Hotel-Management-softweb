@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Admin\HotelManagement;
 
-use App\Http\Controllers\Controller;
-use App\Models\HotelManagement\Booking;
-use App\Models\HotelManagement\Room;
+use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\HotelManagement\Room;
+use Illuminate\Support\Facades\Auth;
+use App\Models\HotelManagement\Booking;
 use Illuminate\Support\Facades\Validator;
-use Carbon\Carbon;
+use App\Http\Resources\Bookings\BookingResource;
+use App\Http\Resources\Bookings\BookingCollection;
 
 class BookingController extends Controller
 {
@@ -18,6 +21,9 @@ class BookingController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'name'           => 'nullable|string|max:255',
+            'email'          => 'nullable|email|max:255',
+            'phone'          => 'nullable|string|max:20',
             'user_id'        => 'nullable|exists:users,id',
             'hotel_id'       => 'required|exists:hotels,id',
             'room_id'        => 'required|exists:rooms,id',
@@ -53,12 +59,10 @@ class BookingController extends Controller
         ];
 
         // If user exists, save user info snapshot
-        if ($request->user_id) {
-            $user = User::find($request->user_id);
-            $bookingData['user_name']  = $user->fullName ?? $user->name ?? null;
-            $bookingData['user_email'] = $user->email ?? null;
-            $bookingData['user_phone'] = $user->phone ?? null;
-        }
+        $user = $request->user_id ? User::find($request->user_id) : null;
+        $bookingData['user_name']  = $user->fullName ?? $user->name ?? $request->name ?? null;
+        $bookingData['user_email'] = $user->email ?? $request->email ?? null;
+        $bookingData['user_phone'] = $user->phone ?? $request->phone ?? null;
 
         // Calculate total amount
         $bookingData['total_amount'] = $room->calculateTotalPrice($request->check_in_date, $request->check_out_date);
@@ -146,4 +150,101 @@ class BookingController extends Controller
             'booking' => $booking
         ]);
     }
+
+
+
+
+        /**
+     * List booked rooms
+     * Admin sees all hotels
+     * Hotel guard sees only their hotel's bookings
+     */
+   public function index(Request $request)
+    {
+        $query = Booking::query();
+
+        // Filter by hotel_id (admin only)
+        if ($request->filled('hotel_id')) {
+            $query->where('hotel_id', $request->hotel_id);
+        }
+
+        // Only confirmed bookings by default (optional)
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        } else {
+            $query->where('status', Booking::STATUS_CONFIRMED);
+        }
+
+        // Auth guard: hotel
+        if (Auth::guard('hotel')->check()) {
+            $hotelId = Auth::guard('hotel')->id();
+            $query->where('hotel_id', $hotelId);
+        }
+
+        // Date range filter
+        if ($request->filled('from_date') && $request->filled('to_date')) {
+            $from = Carbon::parse($request->from_date)->startOfDay();
+            $to   = Carbon::parse($request->to_date)->endOfDay();
+
+            $query->where(function ($q) use ($from, $to) {
+                $q->whereBetween('check_in_date', [$from, $to])
+                  ->orWhereBetween('check_out_date', [$from, $to]);
+            });
+        }
+
+        // Filter by room type (join with room)
+        if ($request->filled('room_type')) {
+            $query->whereHas('room', function ($q) use ($request) {
+                $q->where('room_type', $request->room_type);
+            });
+        }
+
+        // Filter by user name (partial match)
+        if ($request->filled('user_name')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('user_name', 'like', '%' . $request->user_name . '%')
+                  ->orWhereHas('user', function ($uq) use ($request) {
+                      $uq->where('name', 'like', '%' . $request->user_name . '%');
+                  });
+            });
+        }
+
+        // Eager load related models
+        $bookings = $query
+            ->with(['room', 'hotel', 'user'])
+            ->orderBy('check_in_date', 'desc')
+            ->paginate(20); // pagination added
+
+
+            return new BookingCollection($bookings);
+
+
+        return response()->json([
+            'success' => true,
+            'data' => $bookings->map(function ($b) {
+                return [
+                    'booking_id'    => $b->id,
+                    'hotel_id'      => $b->hotel->id ?? null,
+                    'hotel_name'    => $b->hotel->name ?? null,
+                    'user_name'     => $b->user_name ?? $b->user->name ?? null,
+                    'user_email'    => $b->user_email ?? $b->user->email ?? null,
+                    'user_phone'    => $b->user_phone ?? $b->user->phone ?? null,
+                    'room_id'       => $b->room->id ?? null,
+                    'room_number'   => $b->room->room_number ?? null,
+                    'room_type'     => $b->room->room_type ?? null,
+                    'check_in'      => $b->check_in_date,
+                    'check_out'     => $b->check_out_date,
+                    'total_amount'  => $b->total_amount,
+                    'status'        => $b->status,
+                ];
+            }),
+            'pagination' => [
+                'current_page' => $bookings->currentPage(),
+                'last_page'    => $bookings->lastPage(),
+                'total'        => $bookings->total(),
+            ]
+        ]);
+    }
+
+
 }

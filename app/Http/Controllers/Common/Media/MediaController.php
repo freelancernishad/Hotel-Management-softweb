@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\Common\Media;
 
+
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\Media\MediaFile;
+use App\Helpers\HelpersFunctions;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -30,6 +33,9 @@ public function index(Request $request)
             $q->whereIn("label", $labels);
         }
     }])->latest();
+
+
+
 
     // Role-based filtering
     if (Auth::guard('api')->check()) {
@@ -134,6 +140,7 @@ public function show($id)
 
 public function upload(Request $request)
 {
+
     // Validate: at least one must be provided
     $validator = Validator::make($request->all(), [
         'file' => 'required_without:file_url|nullable|image|max:10240',
@@ -198,15 +205,11 @@ public function upload(Request $request)
     $uploaded_by_user_id = Auth::guard('user')->id() ?? null;
     $uploaded_by_admin_id = Auth::guard('admin')->id() ?? null;
 
+
+
     // Track polymorphic uploader
-    $uploader = null;
-    if ($uploaded_by_user_id) {
-        $uploader = Auth::guard('user')->user();
-    } elseif ($uploaded_by_admin_id) {
-        $uploader = Auth::guard('admin')->user();
-    } elseif (Auth::guard('hotel')->check()) {
-        $uploader = Auth::guard('hotel')->user();
-    }
+    $uploader = HelpersFunctions::jwtDecode('model');
+    $uploader_id = HelpersFunctions::jwtDecode('id');
 
     // Upload original to S3
     $originalUrl = (new FileUploadService())->uploadFileToS3($file, 'uploads/images');
@@ -220,7 +223,7 @@ public function upload(Request $request)
     ]);
 
     if ($uploader) {
-        $media->uploader()->associate($uploader);
+        $media->uploader()->associate($uploader::find($uploader_id));
     }
 
     $media->save();
@@ -231,15 +234,15 @@ public function upload(Request $request)
         'thumbnail' => [150, 150],
         'medium' => [300, 300],
         'large' => [600, 600],
-        'extra_large' => [1200, 1200],
-        'xlarge' => [1800, 1800],
+        // 'extra_large' => [1200, 1200],
+        // 'xlarge' => [1800, 1800],
         'square_50' => [50, 50],
         'square_100' => [100, 100],
         'square_200' => [200, 200],
-        'square_400' => [400, 400],
-        'square_600' => [600, 600],
-        'square_800' => [800, 800],
-        'square_1000' => [1000, 1000],
+        // 'square_400' => [400, 400],
+        // 'square_600' => [600, 600],
+        // 'square_800' => [800, 800],
+        // 'square_1000' => [1000, 1000],
     ];
 
     foreach ($sizes as $label => $dimensions) {

@@ -39,6 +39,8 @@ class Hotel extends Authenticatable implements JWTSubject
             'email' => $this->email,
             'username' => $this->username,
             'is_active' => $this->is_active,
+            "guard" => "hotel",
+            "model" => Hotel::class
         ];
     }
 

@@ -59,6 +59,7 @@ public function store(Request $request)
         'special_requests'   => $request->special_requests,
         'user_address'       => $request->user_address,
         'number_of_guests'   => $request->number_of_guests,
+        'booking_reference'  => 'BK-' . strtoupper(uniqid()),
         'status'             => Booking::STATUS_PENDING,
     ];
 
@@ -96,7 +97,9 @@ public function store(Request $request)
             'check_in_date'  => 'required|date|after_or_equal:today',
             'check_out_date' => 'required|date|after:check_in_date',
             'special_requests' => 'nullable|string',
-            'status'         => 'nullable|in:pending,confirmed,cancelled,completed'
+            'status'         => 'nullable|in:pending,confirmed,cancelled,completed',
+            'user_address'      => 'nullable|string|max:500',
+            'number_of_guests'  => 'nullable|integer|min:1',
         ]);
 
         if ($validator->fails()) {
@@ -128,6 +131,9 @@ public function store(Request $request)
                 'user_name'      => $user->fullName ?? $user->name ?? null,
                 'user_email'     => $user->email ?? null,
                 'user_phone'     => $user->phone ?? null,
+                'user_address'       => $request->user_address,
+                'number_of_guests'   => $request->number_of_guests,
+                'booking_reference'  => 'BK-' . strtoupper(uniqid()),
             ];
 
             $createdBookings[] = Booking::create($bookingData);
@@ -236,6 +242,11 @@ public function store(Request $request)
                     'user_name'     => $b->user_name ?? $b->user->name ?? null,
                     'user_email'    => $b->user_email ?? $b->user->email ?? null,
                     'user_phone'    => $b->user_phone ?? $b->user->phone ?? null,
+                    'user_address'       => $b->user_address,
+                    'number_of_guests'   => $b->number_of_guests,
+                    'booking_reference'  => $b->booking_reference,
+                    'payment_method'     => $b->payment_method,
+                    'cancellation_reason'=> $b->cancellation_reason,
                     'room_id'       => $b->room->id ?? null,
                     'room_number'   => $b->room->room_number ?? null,
                     'room_type'     => $b->room->room_type ?? null,

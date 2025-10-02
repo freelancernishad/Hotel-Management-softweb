@@ -1,9 +1,10 @@
 <?php
 
-use App\Http\Controllers\Admin\HotelManagement\HotelController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\AuthenticateHotel;
 use App\Http\Controllers\Auth\Hotel\HotelAuthController;
+use App\Http\Controllers\Admin\HotelManagement\HotelController;
+use App\Http\Controllers\Admin\HotelManagement\BookingController;
 
 
 Route::prefix('auth/hotel')->group(function () {
@@ -22,4 +23,8 @@ Route::prefix('auth/hotel')->group(function () {
         Route::post('hotel/profile', [HotelAuthController::class, 'updateProfile']);
         Route::post('hotel/create/rooms', [HotelController::class, 'addRooms']);
         Route::get('hotel/get/rooms', [HotelController::class, 'getRooms']);
+
+        Route::get('hotel/get/bookings/lists', [BookingController::class, 'index']);
+
+
     });

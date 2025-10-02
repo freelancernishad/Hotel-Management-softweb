@@ -18,62 +18,71 @@ class BookingController extends Controller
     /**
      * Create a new booking
      */
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'name'           => 'nullable|string|max:255',
-            'email'          => 'nullable|email|max:255',
-            'phone'          => 'nullable|string|max:20',
-            'user_id'        => 'nullable|exists:users,id',
-            'hotel_id'       => 'required|exists:hotels,id',
-            'room_id'        => 'required|exists:rooms,id',
-            'check_in_date'  => 'required|date|after_or_equal:today',
-            'check_out_date' => 'required|date|after:check_in_date',
-            'special_requests' => 'nullable|string',
-            // 'status'         => 'nullable|in:pending,confirmed,cancelled,completed'
-        ]);
+public function store(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'name'              => 'nullable|string|max:255',
+        'email'             => 'nullable|email|max:255',
+        'phone'             => 'nullable|string|max:20',
+        'user_id'           => 'nullable|exists:users,id',
+        'hotel_id'          => 'required|exists:hotels,id',
+        'room_id'           => 'required|exists:rooms,id',
+        'check_in_date'     => 'required|date|after_or_equal:today',
+        'check_out_date'    => 'required|date|after:check_in_date',
+        'special_requests'  => 'nullable|string',
+        'user_address'      => 'nullable|string|max:500',
+        'number_of_guests'  => 'nullable|integer|min:1',
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+    ]);
 
-        $room = Room::findOrFail($request->room_id);
-
-        // Check if room is available for the given dates
-        if (!$room->isAvailable($request->check_in_date, $request->check_out_date)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Room is not available for the selected dates'
-            ], 400);
-        }
-
-        // Prepare booking data
-        $bookingData = [
-            'user_id'        => $request->user_id,
-            'hotel_id'       => $request->hotel_id,
-            'room_id'        => $request->room_id,
-            'check_in_date'  => $request->check_in_date,
-            'check_out_date' => $request->check_out_date,
-            'special_requests' => $request->special_requests,
-            'status'         => Booking::STATUS_PENDING,
-        ];
-
-        // If user exists, save user info snapshot
-        $user = $request->user_id ? User::find($request->user_id) : null;
-        $bookingData['user_name']  = $user->fullName ?? $user->name ?? $request->name ?? null;
-        $bookingData['user_email'] = $user->email ?? $request->email ?? null;
-        $bookingData['user_phone'] = $user->phone ?? $request->phone ?? null;
-
-        // Calculate total amount
-        $bookingData['total_amount'] = $room->calculateTotalPrice($request->check_in_date, $request->check_out_date);
-
-        $booking = Booking::create($bookingData);
-
-        return response()->json([
-            'success' => true,
-            'booking' => $booking
-        ], 201);
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
     }
+
+    $room = Room::findOrFail($request->room_id);
+
+    // Check if room is available for the given dates
+    if (!$room->isAvailable($request->check_in_date, $request->check_out_date)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Room is not available for the selected dates'
+        ], 400);
+    }
+
+    // Prepare booking data
+    $bookingData = [
+        'user_id'            => $request->user_id,
+        'hotel_id'           => $request->hotel_id,
+        'room_id'            => $request->room_id,
+        'check_in_date'      => $request->check_in_date,
+        'check_out_date'     => $request->check_out_date,
+        'special_requests'   => $request->special_requests,
+        'user_address'       => $request->user_address,
+        'number_of_guests'   => $request->number_of_guests,
+        'status'             => Booking::STATUS_PENDING,
+    ];
+
+    // If user exists, save user info snapshot
+    $user = $request->user_id ? User::find($request->user_id) : null;
+    $bookingData['user_name']  = $user->fullName ?? $user->name ?? $request->name ?? null;
+    $bookingData['user_email'] = $user->email ?? $request->email ?? null;
+    $bookingData['user_phone'] = $user->phone ?? $request->phone ?? null;
+
+    // Calculate total amount
+    $bookingData['total_amount'] = $room->calculateTotalPrice($request->check_in_date, $request->check_out_date);
+
+    // Generate unique booking reference
+    $bookingData['booking_reference'] = 'BK-' . strtoupper(uniqid());
+
+    // Create booking
+    $booking = Booking::create($bookingData);
+
+    return response()->json([
+        'success' => true,
+        'booking' => $booking
+    ], 201);
+}
+
 
 
 

@@ -23,7 +23,12 @@ class Booking extends Model
         'special_requests',
         'user_name',
         'user_email',
-        'user_phone'
+        'user_phone',
+        'user_address',
+        'number_of_guests',
+        'payment_method',
+        'booking_reference',
+        'cancellation_reason'
     ];
 
     protected $dates = [

@@ -171,8 +171,6 @@ class BookingController extends Controller
         // Only confirmed bookings by default (optional)
         if ($request->filled('status')) {
             $query->where('status', $request->status);
-        } else {
-            $query->where('status', Booking::STATUS_CONFIRMED);
         }
 
         // Auth guard: hotel

@@ -154,6 +154,18 @@ class HotelController extends Controller
         return response()->json($hotel);
     }
 
+    // destroy hotel details including rooms
+    public function destroy($id)
+    {
+        $hotel = Hotel::with('rooms', 'manager')->findOrFail($id);
+        $hotel->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Hotel deleted successfully.',
+        ]);
+    }
+
     // Available rooms for a date range
     public function availableRooms(Request $request, $hotelId)
     {

@@ -14,6 +14,12 @@ Route::prefix('admin')->group(function () {
             Route::get('{id}', [HotelController::class, 'show']);
             Route::delete('{id}', [HotelController::class, 'destroy']);
             Route::post('{hotelId}/rooms', [HotelController::class, 'addRooms']);
+
+            Route::put('update/room/{roomId}', [HotelController::class, 'updateRoom']);
+            Route::delete('delete/room/{roomId}', [HotelController::class, 'deleteRoom']);
+            Route::get('room/{roomId}', [HotelController::class, 'getRoomDetails']);
+
+
             Route::get('{hotelId}/available-rooms', [HotelController::class, 'availableRooms']);
         });
 

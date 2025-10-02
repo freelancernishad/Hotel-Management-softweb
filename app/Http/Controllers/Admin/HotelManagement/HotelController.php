@@ -227,4 +227,69 @@ class HotelController extends Controller
             'available_rooms' => $availableRooms
         ]);
     }
+
+
+
+
+    // Update a room
+    public function updateRoom(Request $request, $roomId)
+    {
+        $room = Room::findOrFail($roomId);
+
+        $validator = Validator::make($request->all(), [
+            'room_number'     => 'nullable|string',
+            'room_type'       => 'nullable|string',
+            'price_per_night' => 'nullable|numeric|min:0',
+            'capacity'        => 'nullable|integer|min:1',
+            'description'     => 'nullable|string',
+            'image'           => 'nullable|string',
+            'availability'    => 'boolean',
+            'features'        => 'nullable|array', // ✅ new
+            'features.*'      => 'string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $roomData = $request->only([
+            'room_number', 'room_type', 'price_per_night', 'capacity',
+            'description', 'image', 'availability', 'features'
+        ]);
+
+        $room->update($roomData);
+
+        return response()->json([
+            'success' => true,
+            'room' => $room
+        ]);
+    }
+
+    // Delete a room
+    public function deleteRoom($roomId)
+    {
+        $room = Room::findOrFail($roomId);
+        $room->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Room deleted successfully.'
+        ]);
+    }
+
+    // Get details of a single room
+    public function getRoomDetails($roomId)
+    {
+        $room = Room::with('hotel', 'bookings', 'reviews')->findOrFail($roomId);
+
+        return response()->json([
+            'success' => true,
+            'room' => $room
+        ]);
+    }
+
+
+
+
+
 }

@@ -27,7 +27,3 @@ Route::prefix('admin')->group(function () {
 
 
 
-
-Route::post('hotel/bookings', [BookingController::class, 'store']);
-Route::post('hotel/multiple/bookings', [BookingController::class, 'storeMultiple']);
-Route::get('hotel/bookings/{id}', [BookingController::class, 'show']);

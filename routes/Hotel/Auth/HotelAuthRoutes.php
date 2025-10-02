@@ -26,5 +26,7 @@ Route::prefix('auth/hotel')->group(function () {
 
         Route::get('hotel/get/bookings/lists', [BookingController::class, 'index']);
 
+        Route::patch('hotel/bookings/{id}/status', [BookingController::class, 'updateStatus']);
+
 
     });

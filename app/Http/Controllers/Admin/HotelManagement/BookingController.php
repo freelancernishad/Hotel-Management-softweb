@@ -30,7 +30,7 @@ class BookingController extends Controller
             'check_in_date'  => 'required|date|after_or_equal:today',
             'check_out_date' => 'required|date|after:check_in_date',
             'special_requests' => 'nullable|string',
-            'status'         => 'nullable|in:pending,confirmed,cancelled,completed'
+            // 'status'         => 'nullable|in:pending,confirmed,cancelled,completed'
         ]);
 
         if ($validator->fails()) {
@@ -55,7 +55,7 @@ class BookingController extends Controller
             'check_in_date'  => $request->check_in_date,
             'check_out_date' => $request->check_out_date,
             'special_requests' => $request->special_requests,
-            'status'         => $request->status ?? Booking::STATUS_PENDING,
+            'status'         => Booking::STATUS_PENDING,
         ];
 
         // If user exists, save user info snapshot
@@ -245,6 +245,38 @@ class BookingController extends Controller
             ]
         ]);
     }
+
+
+    public function updateStatus(Request $request, $bookingId)
+    {
+        $validator = Validator::make($request->all(), [
+            'status' => 'required|in:pending,confirmed,cancelled,completed'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $booking = Booking::find($bookingId);
+
+        if (!$booking) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Booking not found'
+            ], 404);
+        }
+
+        $booking->status = $request->status;
+        $booking->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking status updated successfully',
+            'booking' => $booking
+        ]);
+    }
+
+
 
 
 }

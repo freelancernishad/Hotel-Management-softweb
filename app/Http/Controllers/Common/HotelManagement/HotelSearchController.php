@@ -101,6 +101,18 @@ class HotelSearchController extends Controller
     {
 
 
+
+        if(!$request->check_in_date || !$request->check_out_date){
+            $hotel = Hotel::with('rooms')->find($id);
+            return response()->json([
+                'success' => true,
+                'hotel' => $hotel
+            ]);
+        }
+       
+
+
+
         $validator = Validator::make($request->all(), [
             'check_in_date'  => 'required|date|after_or_equal:today',
             'check_out_date' => 'required|date|after:check_in_date',

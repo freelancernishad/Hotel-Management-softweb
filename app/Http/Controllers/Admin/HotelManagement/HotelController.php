@@ -35,7 +35,9 @@ class HotelController extends Controller
             'is_active'      => 'boolean',
             'username'       => 'required|string|unique:hotels,username',
             'password'       => 'required|string|min:8',
-            'rooms'          => 'nullable|array'
+            'rooms'          => 'nullable|array',
+            'features'       => 'nullable|array', // ✅ New
+            'features.*'     => 'string|max:255', // each feature should be string
         ]);
 
         if ($validator->fails()) {
@@ -43,7 +45,7 @@ class HotelController extends Controller
         }
 
         $hotelData = $request->only([
-            'name', 'description', 'location', 'contact_number', 'email', 'manager_id', 'is_active', 'image', 'username'
+            'name', 'description', 'location', 'contact_number', 'email', 'manager_id', 'is_active', 'image', 'username','features'
         ]);
 
         // Add hashed password
@@ -53,7 +55,6 @@ class HotelController extends Controller
 
         $createdRooms = [];
         if ($request->has('rooms')) {
-            // Reuse createRooms function
             $createdRooms = $this->createRooms($request->rooms, $hotel->id, true);
         }
 
@@ -64,6 +65,49 @@ class HotelController extends Controller
         ], 201);
     }
 
+
+
+    // Update hotel
+    public function update(Request $request, $id)
+    {
+        $hotel = Hotel::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'name'           => 'nullable|string|max:255',
+            'description'    => 'nullable|string',
+            'location'       => 'nullable|string',
+            'contact_number' => 'nullable|string',
+            'email'          => 'nullable|email',
+            'image'          => 'nullable|string',
+            'manager_id'     => 'nullable|exists:users,id',
+            'is_active'      => 'boolean',
+            'username'       => 'nullable|string|unique:hotels,username,' . $hotel->id,
+            'password'       => 'nullable|string|min:8',
+            'features'       => 'nullable|array',
+            'features.*'     => 'string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $hotelData = $request->only([
+            'name', 'description', 'location', 'contact_number', 'email',
+            'manager_id', 'is_active', 'image', 'username', 'features'
+        ]);
+
+        // Update password if provided
+        if ($request->filled('password')) {
+            $hotelData['password'] = $request->password;
+        }
+
+        $hotel->update($hotelData);
+
+        return response()->json([
+            'success' => true,
+            'hotel' => $hotel
+        ]);
+    }
 
     /**
      * Add multiple rooms to a hotel

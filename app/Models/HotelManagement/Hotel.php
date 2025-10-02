@@ -14,7 +14,7 @@ class Hotel extends Authenticatable implements JWTSubject
     protected $fillable = [
         'name', 'description', 'location', 'contact_number',
         'email', 'image', 'manager_id', 'is_active',
-        'password', 'username'
+        'password', 'username','features'
     ];
 
     protected $hidden = [
@@ -24,6 +24,7 @@ class Hotel extends Authenticatable implements JWTSubject
     protected $casts = [
         'is_active' => 'boolean',
         'password' => 'hashed',
+        'features' => 'array' 
     ];
 
     public function getJWTIdentifier()

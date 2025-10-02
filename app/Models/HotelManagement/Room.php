@@ -17,11 +17,13 @@ class Room extends Model
         'capacity',
         'description',
         'image',
-        'availability'
+        'availability',
+        'features'
     ];
 
     protected $casts = [
         'availability' => 'boolean',
+        'features' => 'array',
     ];
 
     public function hotel()

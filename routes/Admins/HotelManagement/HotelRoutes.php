@@ -10,6 +10,7 @@ Route::prefix('admin')->group(function () {
         Route::prefix('/hotels')->group(function () {
             Route::get('/', [HotelController::class, 'index']);
             Route::post('/', [HotelController::class, 'store']);
+            Route::put('/{id}', [HotelController::class, 'update']);
             Route::get('{id}', [HotelController::class, 'show']);
             Route::delete('{id}', [HotelController::class, 'destroy']);
             Route::post('{hotelId}/rooms', [HotelController::class, 'addRooms']);

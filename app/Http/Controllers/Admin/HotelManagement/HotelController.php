@@ -38,6 +38,8 @@ class HotelController extends Controller
             'rooms'          => 'nullable|array',
             'features'       => 'nullable|array', // ✅ New
             'features.*'     => 'string|max:255', // each feature should be string
+            'gallery'        => 'nullable|array', // ✅ new
+            'gallery.*'      => 'string|max:255', // each gallery item should be string
         ]);
 
         if ($validator->fails()) {
@@ -45,7 +47,7 @@ class HotelController extends Controller
         }
 
         $hotelData = $request->only([
-            'name', 'description', 'location', 'contact_number', 'email', 'manager_id', 'is_active', 'image', 'username','features'
+            'name', 'description', 'location', 'contact_number', 'email', 'manager_id', 'is_active', 'image', 'username','features','gallery'
         ]);
 
         // Add hashed password
@@ -85,6 +87,8 @@ class HotelController extends Controller
             'password'       => 'nullable|string|min:8',
             'features'       => 'nullable|array',
             'features.*'     => 'string|max:255',
+            'gallery'        => 'nullable|array', // ✅ new
+            'gallery.*'      => 'string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -93,7 +97,7 @@ class HotelController extends Controller
 
         $hotelData = $request->only([
             'name', 'description', 'location', 'contact_number', 'email',
-            'manager_id', 'is_active', 'image', 'username', 'features'
+            'manager_id', 'is_active', 'image', 'username', 'features', 'gallery'
         ]);
 
         // Update password if provided
@@ -142,6 +146,10 @@ class HotelController extends Controller
             'rooms.*.description'     => 'nullable|string',
             'rooms.*.image'           => 'nullable|string', // image URL
             'rooms.*.availability'    => 'boolean',
+            'rooms.*.features'        => 'nullable|array', // ✅ new
+            'rooms.*.features.*'      => 'string|max:255',
+            'rooms.*.gallery'        => 'nullable|array', // ✅ new
+            'rooms.*.gallery.*'      => 'string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -246,6 +254,8 @@ class HotelController extends Controller
             'availability'    => 'boolean',
             'features'        => 'nullable|array', // ✅ new
             'features.*'      => 'string|max:255',
+            'gallery'        => 'nullable|array', // ✅ new
+            'gallery.*'      => 'string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -254,7 +264,7 @@ class HotelController extends Controller
 
         $roomData = $request->only([
             'room_number', 'room_type', 'price_per_night', 'capacity',
-            'description', 'image', 'availability', 'features'
+            'description', 'image', 'availability', 'features','gallery'
         ]);
 
         $room->update($roomData);

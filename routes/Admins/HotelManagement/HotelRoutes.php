@@ -1,9 +1,10 @@
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\AuthenticateAdmin;
+use App\Http\Middleware\AuthenticateHotel;
 use App\Http\Controllers\Admin\HotelManagement\HotelController;
 use App\Http\Controllers\Admin\HotelManagement\BookingController;
-use App\Http\Middleware\AuthenticateHotel;
+use App\Http\Controllers\Admin\HotelManagement\BungalowBookingController;
 
 Route::prefix('admin')->group(function () {
     Route::middleware(AuthenticateAdmin::class)->group(function () {
@@ -24,6 +25,18 @@ Route::prefix('admin')->group(function () {
         });
 
          Route::get('get/bookings/lists', [BookingController::class, 'index']);
+
+
+
+
+         // ডাকবাংলোর তালিকা পাওয়ার জন্য
+        Route::get('/bungalows', [BungalowBookingController::class, 'getBungalows']);
+
+        // বুকিং সম্পর্কিত রাউট
+        Route::get('bungalows/bookings', [BungalowBookingController::class, 'getBookings']);
+        Route::post('bungalows/bookings', [BungalowBookingController::class, 'createBooking']);
+
+
 
 
     });

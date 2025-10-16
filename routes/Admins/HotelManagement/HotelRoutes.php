@@ -21,6 +21,8 @@ Route::prefix('admin')->group(function () {
             Route::delete('delete/room/{roomId}', [HotelController::class, 'deleteRoom']);
             Route::get('room/{roomId}', [HotelController::class, 'getRoomDetails']);
 
+            Route::patch('{hotelId}/status', [HotelController::class, 'updateStatus']);
+
 
             Route::get('{hotelId}/available-rooms', [HotelController::class, 'availableRooms']);
         });

@@ -307,7 +307,23 @@ class HotelController extends Controller
     }
 
 
+    /**
+     * Update hotel is_active status
+     */
+    public function updateStatus(Request $request, $hotelId)
+    {
+        $hotel = Hotel::findOrFail($hotelId);
 
+        // Toggle is_active status
+        $hotel->is_active = !$hotel->is_active;
+        $hotel->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Hotel status toggled successfully.',
+            'hotel' => $hotel
+        ], 200);
+    }
 
 
 }

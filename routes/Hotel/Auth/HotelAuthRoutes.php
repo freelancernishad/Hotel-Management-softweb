@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\AuthenticateHotel;
 use App\Http\Controllers\Auth\Hotel\HotelAuthController;
+use App\Http\Controllers\Hotel\HotelDashboardController;
 use App\Http\Controllers\Admin\HotelManagement\HotelController;
 use App\Http\Controllers\Admin\HotelManagement\BookingController;
 
@@ -27,6 +28,10 @@ Route::prefix('auth/hotel')->group(function () {
         Route::get('hotel/get/bookings/lists', [BookingController::class, 'index']);
 
         Route::patch('hotel/bookings/{id}/status', [BookingController::class, 'updateStatus']);
+
+
+        Route::get('/hotel/overview', [HotelDashboardController::class, 'overview']);
+
 
 
     });

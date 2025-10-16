@@ -61,21 +61,32 @@ class Hotel extends Authenticatable implements JWTSubject
         return $this->hasMany(Booking::class);
     }
 
-public function getAvailableRooms($checkInDate, $checkOutDate)
-{
-    return $this->rooms()
-        ->whereDoesntHave('bookings', function ($query) use ($checkInDate, $checkOutDate) {
-            $query->where('status', Booking::STATUS_CONFIRMED)
-                ->where(function ($q) use ($checkInDate, $checkOutDate) {
-                    $q->whereBetween('check_in_date', [$checkInDate, $checkOutDate])
-                      ->orWhereBetween('check_out_date', [$checkInDate, $checkOutDate])
-                      ->orWhere(function ($q) use ($checkInDate, $checkOutDate) {
-                          $q->where('check_in_date', '<=', $checkInDate)
-                            ->where('check_out_date', '>=', $checkOutDate);
-                      });
-                });
-        })
-        ->get();
-}
+    public function getAvailableRooms($checkInDate, $checkOutDate)
+    {
+        return $this->rooms()
+            ->whereDoesntHave('bookings', function ($query) use ($checkInDate, $checkOutDate) {
+                $query->where('status', Booking::STATUS_CONFIRMED)
+                    ->where(function ($q) use ($checkInDate, $checkOutDate) {
+                        $q->whereBetween('check_in_date', [$checkInDate, $checkOutDate])
+                        ->orWhereBetween('check_out_date', [$checkInDate, $checkOutDate])
+                        ->orWhere(function ($q) use ($checkInDate, $checkOutDate) {
+                            $q->where('check_in_date', '<=', $checkInDate)
+                                ->where('check_out_date', '>=', $checkOutDate);
+                        });
+                    });
+            })
+            ->get();
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeInactive($query)
+    {
+        return $query->where('is_active', false);
+    }
+
 
 }

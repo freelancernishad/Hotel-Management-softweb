@@ -34,7 +34,7 @@ class HotelSearchController extends Controller
         $roomsCount = $request->rooms_count ?? 1;
 
         // Query hotels with available rooms
-        $hotels = Hotel::with(['rooms' => function ($q) use ($checkIn, $checkOut, $roomType) {
+        $hotels = Hotel::Active()->with(['rooms' => function ($q) use ($checkIn, $checkOut, $roomType) {
             $q->where('availability', true);
 
             if ($roomType) {
@@ -103,13 +103,13 @@ class HotelSearchController extends Controller
 
 
         if(!$request->check_in_date || !$request->check_out_date){
-            $hotel = Hotel::with('rooms')->find($id);
+            $hotel = Hotel::Active()->with('rooms')->find($id);
             return response()->json([
                 'success' => true,
                 'hotel' => $hotel
             ]);
         }
-       
+
 
 
 
@@ -130,7 +130,7 @@ class HotelSearchController extends Controller
 
 
 
-        $hotel = Hotel::with('rooms')->find($id);
+        $hotel = Hotel::Active()->with('rooms')->find($id);
 
         if (!$hotel) {
             return response()->json([

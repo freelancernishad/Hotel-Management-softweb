@@ -58,10 +58,7 @@ public function store(Request $request)
             $user->name = $request->name;
             $dirty = true;
         }
-        if ($request->phone && empty($user->phone)) {
-            $user->phone = $request->phone;
-            $dirty = true;
-        }
+
         if ($dirty) {
             $user->save();
         }
@@ -70,7 +67,6 @@ public function store(Request $request)
         $user = User::create([
             'name'     => $request->name ?? 'Guest User',
             'email'    => $request->email ?? 'guest'.time().'@example.com',
-            'phone'    => $request->phone,
             'password' => bcrypt('password123'),
         ]);
     }

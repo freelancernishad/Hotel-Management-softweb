@@ -51,6 +51,20 @@ public function store(Request $request)
     // Handle user
     if ($request->user_id) {
         $user = User::find($request->user_id);
+    } elseif (!empty($request->email) && $user = User::where('email', $request->email)->first()) {
+        // Existing user found by email — optionally update missing fields
+        $dirty = false;
+        if ($request->name && empty($user->name)) {
+            $user->name = $request->name;
+            $dirty = true;
+        }
+        if ($request->phone && empty($user->phone)) {
+            $user->phone = $request->phone;
+            $dirty = true;
+        }
+        if ($dirty) {
+            $user->save();
+        }
     } else {
         // Create new user if not exists
         $user = User::create([

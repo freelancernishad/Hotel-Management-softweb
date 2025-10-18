@@ -15,6 +15,7 @@ class BungalowBooking extends Model
         'mobile_number',
         'check_in_date',
         'check_out_date',
+        'status',
     ];
 
     protected $dates = ['check_in_date', 'check_out_date'];

@@ -33,7 +33,7 @@ public function search(Request $request)
     $roomType = $request->room_type;
     $roomsCount = $request->rooms_count ?? 1;
 
-    $hotels = Hotel::with(['rooms' => function ($q) use ($checkIn, $checkOut, $roomType) {
+    $hotels = Hotel::Active()->with(['rooms' => function ($q) use ($checkIn, $checkOut, $roomType) {
         $q->where('availability', true);
 
         if ($roomType) {

@@ -14,7 +14,7 @@ class HotelController extends Controller
     // Hotel list
     public function index()
     {
-        $hotels = Hotel::with('rooms', 'manager')->get();
+        $hotels = Hotel::active()->with('rooms', 'manager')->get();
         return response()->json([
             'success' => true,
             'data' => $hotels

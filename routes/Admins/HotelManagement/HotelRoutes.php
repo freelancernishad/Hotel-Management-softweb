@@ -39,7 +39,7 @@ Route::prefix('admin')->group(function () {
         Route::get('bungalows/bookings', [BungalowBookingController::class, 'getBookings']);
         Route::post('bungalows/bookings', [BungalowBookingController::class, 'createBooking']);
         Route::delete('bungalows/bookings/{id}', [BungalowBookingController::class, 'deleteBooking']);
-        Route::put('bungalows/bookings/{id}/status', [BungalowBookingController::class, 'updateStatus']);
+        Route::PATCH('bungalows/bookings/{id}/status', [BungalowBookingController::class, 'updateStatus']);
 
 
 

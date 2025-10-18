@@ -22,7 +22,7 @@ class HotelController extends Controller
     }
 
     // Create a new hotel
-    public function store(Request $request)
+   public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'name'           => 'required|string|max:255',
@@ -36,10 +36,10 @@ class HotelController extends Controller
             'username'       => 'required|string|unique:hotels,username',
             'password'       => 'required|string|min:8',
             'rooms'          => 'nullable|array',
-            'features'       => 'nullable|array', // ✅ New
-            'features.*'     => 'string|max:255', // each feature should be string
-            'gallery'        => 'nullable|array', // ✅ new
-            'gallery.*'      => 'string|max:255', // each gallery item should be string
+            'features'       => 'nullable|array',
+            'features.*'     => 'string|max:255',
+            'gallery'        => 'nullable|array',
+            'gallery.*'      => 'string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -47,11 +47,19 @@ class HotelController extends Controller
         }
 
         $hotelData = $request->only([
-            'name', 'description', 'location', 'contact_number', 'email', 'manager_id', 'is_active', 'image', 'username','features','gallery'
+            'name', 'description', 'location', 'contact_number', 'email', 'manager_id', 'image', 'username', 'features', 'gallery'
         ]);
 
-        // Add hashed password
-        $hotelData['password'] = $request->password; // Laravel 10+ will auto-hash due to $casts in model
+        // ✅ Laravel 10+ automatically hashes due to model $casts
+        $hotelData['password'] = $request->password;
+
+        // ✅ Default behavior
+        $hotelData['is_active'] = false;
+
+        // ✅ If the authenticated user is admin, make it active
+        if (auth('admin')->check()) {
+            $hotelData['is_active'] = true;
+        }
 
         $hotel = Hotel::create($hotelData);
 
@@ -299,7 +307,23 @@ class HotelController extends Controller
     }
 
 
+    /**
+     * Update hotel is_active status
+     */
+    public function updateStatus(Request $request, $hotelId)
+    {
+        $hotel = Hotel::findOrFail($hotelId);
 
+        // Toggle is_active status
+        $hotel->is_active = !$hotel->is_active;
+        $hotel->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Hotel status toggled successfully.',
+            'hotel' => $hotel
+        ], 200);
+    }
 
 
 }

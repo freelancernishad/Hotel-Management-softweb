@@ -14,6 +14,12 @@ class HelpersFunctions
      */
     public static function jwtDecode($field = null): array|string|null
     {
+        if (!JWTAuth::getToken()) {
+            if ($field === 'model' || $field === 'id') {
+                return null;
+            }
+            return null;
+        }
         $payload = JWTAuth::parseToken()->getPayload()->toArray();
 
         if ($field) {

@@ -32,7 +32,6 @@ public function store(Request $request)
         'special_requests'  => 'nullable|string',
         'user_address'      => 'nullable|string|max:500',
         'number_of_guests'  => 'nullable|integer|min:1',
-
     ]);
 
     if ($validator->fails()) {
@@ -41,7 +40,7 @@ public function store(Request $request)
 
     $room = Room::findOrFail($request->room_id);
 
-    // Check if room is available for the given dates
+    // Check if room is available
     if (!$room->isAvailable($request->check_in_date, $request->check_out_date)) {
         return response()->json([
             'success' => false,
@@ -49,9 +48,22 @@ public function store(Request $request)
         ], 400);
     }
 
+    // Handle user
+    if ($request->user_id) {
+        $user = User::find($request->user_id);
+    } else {
+        // Create new user if not exists
+        $user = User::create([
+            'name'     => $request->name ?? 'Guest User',
+            'email'    => $request->email ?? 'guest'.time().'@example.com',
+            'phone'    => $request->phone,
+            'password' => bcrypt('password123'),
+        ]);
+    }
+
     // Prepare booking data
     $bookingData = [
-        'user_id'            => $request->user_id,
+        'user_id'            => $user->id,
         'hotel_id'           => $request->hotel_id,
         'room_id'            => $request->room_id,
         'check_in_date'      => $request->check_in_date,
@@ -61,21 +73,12 @@ public function store(Request $request)
         'number_of_guests'   => $request->number_of_guests,
         'booking_reference'  => 'BK-' . strtoupper(uniqid()),
         'status'             => Booking::STATUS_PENDING,
+        'user_name'          => $user->name,
+        'user_email'         => $user->email,
+        'user_phone'         => $user->phone,
+        'total_amount'       => $room->calculateTotalPrice($request->check_in_date, $request->check_out_date),
     ];
 
-    // If user exists, save user info snapshot
-    $user = $request->user_id ? User::find($request->user_id) : null;
-    $bookingData['user_name']  = $user->fullName ?? $user->name ?? $request->name ?? null;
-    $bookingData['user_email'] = $user->email ?? $request->email ?? null;
-    $bookingData['user_phone'] = $user->phone ?? $request->phone ?? null;
-
-    // Calculate total amount
-    $bookingData['total_amount'] = $room->calculateTotalPrice($request->check_in_date, $request->check_out_date);
-
-    // Generate unique booking reference
-    $bookingData['booking_reference'] = 'BK-' . strtoupper(uniqid());
-
-    // Create booking
     $booking = Booking::create($bookingData);
 
     return response()->json([
@@ -83,6 +86,7 @@ public function store(Request $request)
         'booking' => $booking
     ], 201);
 }
+
 
 
 

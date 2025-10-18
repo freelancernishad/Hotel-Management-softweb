@@ -4,6 +4,7 @@ use App\Http\Middleware\AuthenticateAdmin;
 use App\Http\Middleware\AuthenticateHotel;
 use App\Http\Controllers\Admin\HotelManagement\HotelController;
 use App\Http\Controllers\Admin\HotelManagement\BookingController;
+use App\Http\Controllers\Admin\HotelManagement\AdminDashboardController;
 use App\Http\Controllers\Admin\HotelManagement\BungalowBookingController;
 
 Route::prefix('admin')->group(function () {
@@ -19,6 +20,8 @@ Route::prefix('admin')->group(function () {
             Route::put('update/room/{roomId}', [HotelController::class, 'updateRoom']);
             Route::delete('delete/room/{roomId}', [HotelController::class, 'deleteRoom']);
             Route::get('room/{roomId}', [HotelController::class, 'getRoomDetails']);
+
+            Route::patch('{hotelId}/status', [HotelController::class, 'updateStatus']);
 
 
             Route::get('{hotelId}/available-rooms', [HotelController::class, 'availableRooms']);
@@ -38,6 +41,8 @@ Route::prefix('admin')->group(function () {
 
 
 
+    Route::get('hotel/overview', [AdminDashboardController::class, 'overview']);
+
 
     });
 });
@@ -45,6 +50,7 @@ Route::prefix('admin')->group(function () {
 
 
 
+            Route::post('hotel/registration', [HotelController::class, 'store']);
 
 
 

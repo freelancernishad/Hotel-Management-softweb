@@ -12,7 +12,7 @@ class HotelSearchController extends Controller
     /**
      * Search hotels by date, room type, and number of rooms
      */
-   public function search(Request $request)
+public function search(Request $request)
 {
     $validator = Validator::make($request->all(), [
         'check_in_date'  => 'required|date|after_or_equal:today',
@@ -33,9 +33,8 @@ class HotelSearchController extends Controller
     $roomType = $request->room_type;
     $roomsCount = $request->rooms_count ?? 1;
 
-        // Query hotels with available rooms
-        $hotels = Hotel::with(['rooms' => function ($q) use ($checkIn, $checkOut, $roomType) {
-            $q->where('availability', true);
+    $hotels = Hotel::with(['rooms' => function ($q) use ($checkIn, $checkOut, $roomType) {
+        $q->where('availability', true);
 
         if ($roomType) {
             $q->where('room_type', $roomType);

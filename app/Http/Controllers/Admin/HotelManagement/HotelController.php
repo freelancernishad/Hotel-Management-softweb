@@ -17,11 +17,9 @@ class HotelController extends Controller
 
         $auth = Auth::guard('admin')->user();
         if($auth){
-            // Admin authenticated
-            $hotels = Hotel::active()->with('rooms', 'manager')->get();
-
-        }else{
             $hotels = Hotel::with('rooms', 'manager')->get();
+        }else{
+            $hotels = Hotel::active()->with('rooms', 'manager')->get();
         }
 
         return response()->json([

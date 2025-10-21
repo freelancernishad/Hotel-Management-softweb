@@ -14,11 +14,22 @@ class HotelController extends Controller
     // Hotel list
     public function index()
     {
-        $hotels = Hotel::active()->with('rooms', 'manager')->get();
+
+        $auth = Auth::guard('admin')->user();
+        if($auth){
+            // Admin authenticated
+            $hotels = Hotel::active()->with('rooms', 'manager')->get();
+
+        }else{
+            $hotels = Hotel::with('rooms', 'manager')->get();
+        }
+
         return response()->json([
             'success' => true,
             'data' => $hotels
         ]);
+
+
     }
 
     // Create a new hotel

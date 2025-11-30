@@ -35,9 +35,9 @@ Route::get('/clear-cache', [SystemSettingController::class, 'clearCache']);
 
 
 
-Route::get('booking/invoice/{id}',function ($id){
+Route::get('booking/invoice/{booking_reference}',function ($booking_reference){
 
-    $booking = Booking::with('hotel', 'room')->find($id);
+    $booking = Booking::with('hotel', 'room')->where('booking_reference', $booking_reference)->first();
     // return response()->json($booking);
     if(!$booking){
         return response()->json(["error" => "Booking not found"], 404);

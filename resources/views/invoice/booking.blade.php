@@ -122,8 +122,8 @@
             <td class="text-center border-bottom" style="text-align:center;">
                 <div class="hotel-name">{{ $booking->hotel->name ?? 'Hotel Name' }}</div>
                 <div >
-                    {{ $booking->hotel->location ?? '' }} •
-                    {{ $booking->hotel->contact_number ?? '' }} •
+                    {{ $booking->hotel->location ?? '' }} ,
+                    {{ $booking->hotel->contact_number ?? '' }} ,
                     {{ $booking->hotel->email ?? '' }}
                 </div>
             </td>
@@ -240,7 +240,7 @@
                     {{ $booking->room->room_type }} ({{ $booking->room->room_number }})
                     <div class="small">
                         ({{ \Carbon\Carbon::parse($booking->check_in_date)->format('M j') }}
-                        → 
+                        -
                         {{ \Carbon\Carbon::parse($booking->check_out_date)->format('M j, Y') }})
                     </div>
                 </td>

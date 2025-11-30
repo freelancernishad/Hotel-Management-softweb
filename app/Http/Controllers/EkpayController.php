@@ -51,8 +51,8 @@ class EkpayController extends Controller
         // Process based on the message code
         if ($data['msg_code'] == '1020') {
 
-            $paymeent_method = $data['pi_det_info']['pi_method'];
-            $transaction_id = $data['trnx_info']['trnx_id'];
+            $paymeent_method = $data['pi_det_info']['pi_gateway'];
+         
             $booking->update(['status' => 'completed', 'payment_method' => $paymeent_method]);
 
 

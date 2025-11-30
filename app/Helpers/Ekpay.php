@@ -14,7 +14,7 @@ class Ekpay
 public static function ekpayToken($trnx_id=123456789,$trns_info=[],$cust_info=[],$urls){
 
 
-    $url = config('AKPAY_IPN_URL');
+    $url = config('AKPAY_IPN_URL') ?? url('ekpay/ipn');
 
 
    $req_timestamp = date('Y-m-d H:i:s');

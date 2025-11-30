@@ -93,13 +93,13 @@ public function store(Request $request)
     $booking = Booking::create($bookingData);
 
       $applicant_mobile = $user->phone;
-        $total_amount = 150;
+        $total_amount = $booking->total_amount;
 
-        $trnx_id = time();
+        $trnx_id = $booking->booking_reference;
 
         $cust_info = [
             "cust_email" => "",
-            "cust_id" => (string) $user->id,
+            "cust_id" => (string) $booking->id,
             "cust_mail_addr" => "Address",
             "cust_mobo_no" => $applicant_mobile,
             "cust_name" => $user->name

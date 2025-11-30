@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EkpayController;
 
 // Load SystemSettingsRoutes
 if (file_exists($SystemSettingsRoutes = __DIR__.'/Common/SystemSettingsRoutes.php')) {
@@ -140,3 +141,4 @@ if (file_exists($HotelAuthRoutes = __DIR__.'/Hotel/Auth/HotelAuthRoutes.php')) {
 
 
 
+Route::post('ekpay/ipn',[EkpayController::class ,'ipn']);

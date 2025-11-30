@@ -121,7 +121,7 @@
         <tr>
             <td class="text-center border-bottom" style="text-align:center;">
                 <div class="hotel-name">{{ $booking->hotel->name ?? 'Hotel Name' }}</div>
-                <div class="small">
+                <div >
                     {{ $booking->hotel->location ?? '' }} •
                     {{ $booking->hotel->contact_number ?? '' }} •
                     {{ $booking->hotel->email ?? '' }}

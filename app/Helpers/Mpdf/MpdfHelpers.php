@@ -26,7 +26,7 @@ class MpdfHelpers
 
     $mpdf = new Mpdf([  
         'default_font_size' => 12,
-        'default_font' => "$font_familly",
+        'default_font' => "bangla",
         'mode' => 'utf-8',
         'format' => $page_format,
         'setAutoTopMargin' => 'stretch',

@@ -92,7 +92,7 @@ public function store(Request $request)
 
     $booking = Booking::create($bookingData);
 
-      $applicant_mobile = $user->phone;
+      $applicant_mobile = $booking->user_phone;
         $total_amount = $booking->total_amount;
 
         $trnx_id = $booking->booking_reference;

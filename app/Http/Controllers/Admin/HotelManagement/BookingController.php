@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\HotelManagement;
 
 use Carbon\Carbon;
 use App\Models\User;
+use App\Helpers\Ekpay;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\HotelManagement\Room;
@@ -91,9 +92,40 @@ public function store(Request $request)
 
     $booking = Booking::create($bookingData);
 
+      $applicant_mobile = $user->phone;
+        $total_amount = 150;
+
+        $trnx_id = time();
+
+        $cust_info = [
+            "cust_email" => "",
+            "cust_id" => (string) $user->id,
+            "cust_mail_addr" => "Address",
+            "cust_mobo_no" => $applicant_mobile,
+            "cust_name" => $user->name
+        ];
+
+        $trns_info = [
+            "ord_det" => 'auto_bike',
+            "ord_id" => (string) $user->id,
+            "trnx_amt" => $total_amount,
+            "trnx_currency" => "BDT",
+            "trnx_id" => $trnx_id
+        ];
+
+        $urls = [
+            'c_uri' => $request->input('c_uri'),
+            'f_uri' => $request->input('f_uri'),
+            's_uri' => $request->input('s_uri'),
+        ];
+
+        $redirectUrl = Ekpay::ekpayToken($trnx_id, $trns_info, $cust_info, $urls);
+
+
     return response()->json([
         'success' => true,
-        'booking' => $booking
+        'booking' => $booking,
+        'redirectUrl' => $redirectUrl
     ], 201);
 }
 

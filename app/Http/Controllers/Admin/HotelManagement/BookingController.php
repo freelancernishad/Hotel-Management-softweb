@@ -86,7 +86,7 @@ public function store(Request $request)
         'status'             => Booking::STATUS_PENDING,
         'user_name'          => $user->name,
         'user_email'         => $user->email,
-        'user_phone'         => $user->phone,
+        'user_phone'         => $user->phone ?? $request->phone,
         'total_amount'       => $room->calculateTotalPrice($request->check_in_date, $request->check_out_date),
     ];
 

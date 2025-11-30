@@ -1,7 +1,9 @@
 <?php
 
+use App\Helpers\Mpdf\MpdfHelpers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use App\Models\HotelManagement\Booking;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\Common\SystemSettings\SystemSettingController;
 
@@ -28,3 +30,26 @@ Route::get('/run-migrate', function() {
 
 // For web routes
 Route::get('/clear-cache', [SystemSettingController::class, 'clearCache']);
+
+
+
+
+
+Route::get('booking/invoice/{id}',function ($id){
+
+    $booking = Booking::with('hotel', 'room')->find($id);
+    // return response()->json($booking);
+    if(!$booking){
+        return response()->json(["error" => "Booking not found"], 404);
+    }
+
+        $htmlView = view('invoice.booking', compact('booking'))->render();
+
+
+
+        $header = null; // Add HTML for header if required
+        $footer = null; // Add HTML for footer if required
+        $filename = "invoice" . $booking->booking_reference . ".pdf";
+        return  MpdfHelpers::generatePdf($htmlView, $header, $footer, $filename);
+
+});

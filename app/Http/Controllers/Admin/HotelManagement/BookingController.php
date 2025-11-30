@@ -121,6 +121,7 @@ public function store(Request $request)
 
         $redirectUrl = Ekpay::ekpayToken($trnx_id, $trns_info, $cust_info, $urls);
 
+        $booking['redirectUrl'] = $redirectUrl;
 
     return response()->json([
         'success' => true,
